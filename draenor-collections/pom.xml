@@ -13,6 +13,7 @@
 
     <artifactId>draenor-collections</artifactId>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
     <description>Collection Utils</description>
 
 </project>
