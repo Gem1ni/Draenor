@@ -1,9 +1,6 @@
 package com.gem1ni.draenor.collections.heap;
 
-import java.util.AbstractCollection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -137,6 +134,35 @@ abstract class AbstractHeap<E extends Comparable<? super E>> extends AbstractCol
         return true;
     }
 
+    /**
+     * ArrayItr
+     * 堆迭代器
+     *
+     * @author Gem1ni
+     */
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        int sizeOfCollection = c.size();
+        if (0 == sizeOfCollection) {
+            return false;
+        }
+        int newSize = this.size() + sizeOfCollection;
+        if (MAX_CAPACITY - 1 < newSize) {
+            throw new IllegalArgumentException("Maximum heap size exceeded.");
+        }
+        // 看看是不是要扩容
+        if (this.array.length - 1 <= newSize) {
+            this.enlarge(fixCapacity(newSize + 1));
+        }
+        // 把集合中的元素先放入堆底
+        for (E item : c) {
+            this.array[++this.currentSize] = item;
+        }
+        // 重新构建堆
+        this.build();
+        return true;
+    }
+
     @Override
     public E getRoot() {
         if (this.isEmpty()) {
@@ -199,9 +225,11 @@ abstract class AbstractHeap<E extends Comparable<? super E>> extends AbstractCol
      * 堆迭代器
      *
      * @author Gem1ni
+     * {@link java.util.Arrays.ArrayItr}
      */
     private static class ArrayItr<E> implements Iterator<E> {
         private int cursor;
+
         private final E[] a;
 
         ArrayItr(E[] a) {
@@ -231,6 +259,28 @@ abstract class AbstractHeap<E extends Comparable<? super E>> extends AbstractCol
         for (int i = this.size() >> 1; i > 0; i--) {
             this.percolateDown(i);
         }
+    }
+
+    @Override
+    public final boolean remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void clear() {
+        this.currentSize = 0;
+        this.array = (E[]) new Comparable[fixCapacity(DEFAULT_CAPACITY + 1)];
     }
 
     @Override
