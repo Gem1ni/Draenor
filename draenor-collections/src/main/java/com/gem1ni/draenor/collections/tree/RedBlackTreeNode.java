@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Objects;
+
 /**
  * RedBlackTreeNode
  * 红黑树节点
@@ -15,7 +17,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class RedBlackTreeNode<Node> {
+class RedBlackTreeNode<Val> {
 
     /**
      * 红色
@@ -37,7 +39,7 @@ public class RedBlackTreeNode<Node> {
     /**
      * 构造方法
      */
-    public RedBlackTreeNode(Node value, RedBlackTreeNode<Node> parent) {
+    public RedBlackTreeNode(Val value, RedBlackTreeNode<Val> parent) {
         this();
         this.value = value;
         this.parent = parent;
@@ -51,22 +53,22 @@ public class RedBlackTreeNode<Node> {
     /**
      * 当前节点值
      */
-    private Node value;
+    private Val value;
 
     /**
      * 父节点
      */
-    private RedBlackTreeNode<Node> parent;
+    private RedBlackTreeNode<Val> parent;
 
     /**
      * 左子节点
      */
-    private RedBlackTreeNode<Node> left;
+    private RedBlackTreeNode<Val> left;
 
     /**
      * 右子节点
      */
-    private RedBlackTreeNode<Node> right;
+    private RedBlackTreeNode<Val> right;
 
     /**
      * 是否是根节点
@@ -83,7 +85,7 @@ public class RedBlackTreeNode<Node> {
      * @return 是否是父节点的左子节点
      */
     public boolean isLeft() {
-        RedBlackTreeNode<Node> leftOfParent = this.getParent().getLeft();
+        RedBlackTreeNode<Val> leftOfParent = this.getParent().getLeft();
         return !this.isRoot()
                 && null != leftOfParent
                 && leftOfParent.equals(this);
@@ -95,22 +97,21 @@ public class RedBlackTreeNode<Node> {
      * @return 是否是父节点的右子节点
      */
     public boolean isRight() {
-        RedBlackTreeNode<Node> rightOfParent = this.getParent().getRight();
+        RedBlackTreeNode<Val> rightOfParent = this.getParent().getRight();
         return !this.isRoot()
                 && null != rightOfParent
                 && rightOfParent.equals(this);
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.value);
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if (null == obj) {
-            return false;
-        }
-        if (obj instanceof RedBlackTreeNode) {
-            return this.value.equals(((RedBlackTreeNode<Node>) obj).getValue());
-        }
-        return false;
+        // 强调：节点的对比比的是内存地址，不是比值
+        return super.equals(obj);
     }
 
     @Override

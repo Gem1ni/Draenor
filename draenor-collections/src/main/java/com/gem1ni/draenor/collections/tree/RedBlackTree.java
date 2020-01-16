@@ -14,12 +14,12 @@ import static com.gem1ni.draenor.collections.tree.RedBlackTreeNode.RED;
  *
  * @author Gem1ni
  */
-public class RedBlackTree<Node> extends AbstractSet<Node> {
+public class RedBlackTree<Val> extends AbstractSet<Val> {
 
     /**
      * 树的根节点
      */
-    private RedBlackTreeNode<Node> root;
+    private RedBlackTreeNode<Val> root;
 
     /**
      * 树的节点数量
@@ -29,14 +29,14 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
     /**
      * 比较器
      */
-    private final Comparator<? super Node> comparator;
+    private final Comparator<? super Val> comparator;
 
     /**
      * 构造方法
      *
      * @param comparator 决定内部排序规则
      */
-    public RedBlackTree(Comparator<? super Node> comparator) {
+    public RedBlackTree(Comparator<? super Val> comparator) {
         if (null == comparator) {
             throw new NullPointerException("比较器不能为空");
         }
@@ -44,7 +44,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
     }
 
     @Override
-    public Iterator<Node> iterator() {
+    public Iterator<Val> iterator() {
         return null;
     }
 
@@ -64,16 +64,16 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
     }
 
     @Override
-    public boolean addAll(Collection<? extends Node> c) {
+    public boolean addAll(Collection<? extends Val> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean add(Node node) {
+    public boolean add(Val node) {
         if (null == node) {
             throw new NullPointerException("要新增的节点不能为空");
         }
-        RedBlackTreeNode<Node> tmp = this.root;
+        RedBlackTreeNode<Val> tmp = this.root;
         // 如果根节点是空
         if (null == tmp) {
             this.root = new RedBlackTreeNode<>(node, null)
@@ -85,7 +85,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
         // 比较的结果
         int cmp;
         // 父节点
-        RedBlackTreeNode<Node> parent;
+        RedBlackTreeNode<Val> parent;
         // do-while 至少执行一次
         do {
             // 将临时节点赋值为父节点
@@ -103,7 +103,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
                 return false;
             }
         } while (tmp != null);
-        RedBlackTreeNode<Node> n = new RedBlackTreeNode<>(node, parent);
+        RedBlackTreeNode<Val> n = new RedBlackTreeNode<>(node, parent);
         if (0 > cmp) {
             // 作为父节点的左子节点
             parent.setLeft(n);
@@ -120,8 +120,9 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      * 新增后自平衡
      *
      * @param node 新增的节点
+     * @apiNote 注意：这里很多 node 与其他结果的比较用的是比较内存地址，不是比值
      */
-    private void fixAfterAdd(RedBlackTreeNode<Node> node) {
+    private void fixAfterAdd(RedBlackTreeNode<Val> node) {
         // 新增的节点默认为红色
         setColorRed(node);
         // 当前处理的节点不为空，且当前处理的节点不是根节点，且当前处理节点的父节点是红色
@@ -129,7 +130,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
             // 如果当前处理节点的父节点是祖父节点的左子节点
             if (parentOf(node) == leftOf(parentOf(parentOf(node)))) {
                 // 父节点的父节点的右子节点（伯伯节点）
-                RedBlackTreeNode<Node> tmp = rightOf(parentOf(parentOf(node)));
+                RedBlackTreeNode<Val> tmp = rightOf(parentOf(parentOf(node)));
                 if (colorOf(tmp) == RED) {
                     // 1.伯伯节点为红色【只需要变颜色】
                     // 当前节点的父节点和伯伯节点变为黑色
@@ -141,7 +142,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
                 } else {
                     // 2.伯伯节点为黑色
                     // 当前节点是父节点的右子节点
-                    if (node.equals(rightOf(parentOf(node)))) {
+                    if (node == rightOf(parentOf(node))) {
                         // 将当前处理节点变为父节点继续处理
                         node = parentOf(node);
                         // 左旋
@@ -155,7 +156,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
                 // 当前处理节点的父节点是祖父节点的右子节点
             } else {
                 // 叔叔节点
-                RedBlackTreeNode<Node> tmp = leftOf(parentOf(parentOf(node)));
+                RedBlackTreeNode<Val> tmp = leftOf(parentOf(parentOf(node)));
                 // 3.叔叔节点为红色【只需要变颜色】
                 if (RED == colorOf(tmp)) {
                     // 当前节点的父节点和伯伯节点变为黑色
@@ -165,8 +166,8 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
                     // 将当前处理节点变为祖父节点继续处理
                     node = parentOf(parentOf(node));
                 } else {
-                    // 当前处理的节点是父节点的左子节点
-                    if (node.equals(leftOf(parentOf(node)))) {
+                    // 4.当前处理的节点是父节点的左子节点
+                    if (node == leftOf(parentOf(node))) {
                         // 将当前处理节点变为父节点继续处理
                         node = parentOf(node);
                         // 右旋
@@ -185,13 +186,91 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
         setColorBlack(this.root);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean remove(Object o) {
+        if (null == o) {
+            return false;
+        }
+        Val val = (Val) o;
+        RedBlackTreeNode<Val> node = this.getNode(val);
+        return null != node;
+    }
+
+    /**
+     * 获取节点
+     *
+     * @return 红黑树节点
+     * @apiNote 利用比较器做二分查找
+     */
+    private RedBlackTreeNode<Val> getNode(Val value) {
+        if (null == value) {
+            return null;
+        }
+        // 比较的结果
+        int cmp;
+        RedBlackTreeNode<Val> tmp = this.root;
+        while (null != tmp) {
+            cmp = this.comparator.compare(value, tmp.getValue());
+            if (0 > cmp) {
+                tmp = tmp.getLeft();
+            } else if (0 < cmp) {
+                tmp = tmp.getRight();
+            } else {
+                return tmp;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 删除指定节点
+     *
+     * @param node 树节点
+     */
+    private void deleteNode(RedBlackTreeNode<Val> node) {
+        this.size--;
+    }
+
+    /**
+     * 后继节点
+     *
+     * @param node  指定树节点
+     * @param <Val> 节点值泛型
+     * @return 后继节点
+     * @apiNote 就是找排序后的下一个节点
+     */
+    private static <Val> RedBlackTreeNode<Val> successor(RedBlackTreeNode<Val> node) {
+        if (null == node) {
+            return null;
+        } else if (null != node.getRight()) {
+            // 如果右子节点不为空
+            RedBlackTreeNode<Val> tmp = node.getRight();
+            while (null != tmp.getLeft()) {
+                tmp = tmp.getLeft();
+            }
+            return tmp;
+        } else {
+            RedBlackTreeNode<Val> parent = node.getParent();
+            RedBlackTreeNode<Val> child = node;
+            // 如果当前节点不是根节点且当前点是右节点，则继续往上找
+            // 1. 如果当前节点是左子节点，则取父节点
+            while (null != parent && child == parent.getRight()) {
+                // 2. 如果当前节点是右子节点，则将当前处理节点换为父节点递归处理，直到找到根节点为止
+                child = parent;
+                parent = parent.getParent();
+            }
+            return parent;
+        }
+    }
+
     /**
      * 获取父节点
      *
      * @param node 树节点
      * @return 父节点
      */
-    private static <Node> RedBlackTreeNode<Node> parentOf(RedBlackTreeNode<Node> node) {
+    private static <Val> RedBlackTreeNode<Val> parentOf(RedBlackTreeNode<Val> node) {
         return null == node ? null : node.getParent();
     }
 
@@ -201,7 +280,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      * @param node 树节点
      * @return 左子节点
      */
-    private static <Node> RedBlackTreeNode<Node> leftOf(RedBlackTreeNode<Node> node) {
+    private static <Val> RedBlackTreeNode<Val> leftOf(RedBlackTreeNode<Val> node) {
         return null == node ? null : node.getLeft();
     }
 
@@ -211,18 +290,18 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      * @param node 树节点
      * @return 右子节点
      */
-    private static <Node> RedBlackTreeNode<Node> rightOf(RedBlackTreeNode<Node> node) {
+    private static <Val> RedBlackTreeNode<Val> rightOf(RedBlackTreeNode<Val> node) {
         return null == node ? null : node.getRight();
     }
 
     /**
      * 获取节点颜色
      *
-     * @param node   树节点
-     * @param <Node> 节点值泛型
+     * @param node  树节点
+     * @param <Val> 节点值泛型
      * @return 颜色
      */
-    private static <Node> boolean colorOf(RedBlackTreeNode<Node> node) {
+    private static <Val> boolean colorOf(RedBlackTreeNode<Val> node) {
         return null == node ? BLACK :
                 null == node.getColor() ? BLACK : node.getColor();
     }
@@ -233,7 +312,7 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      * @param node 树节点
      */
     @SafeVarargs
-    private static <Node> void setColorBlack(RedBlackTreeNode<Node>... node) {
+    private static <Val> void setColorBlack(RedBlackTreeNode<Val>... node) {
         if (null != node) {
             Stream.of(node)
                     .filter(Objects::nonNull)
@@ -244,11 +323,11 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
     /**
      * 【变色】将节点置为红色
      *
-     * @param node   树节点
-     * @param <Node> 节点值泛型
+     * @param node  树节点
+     * @param <Val> 节点值泛型
      */
     @SafeVarargs
-    private static <Node> void setColorRed(RedBlackTreeNode<Node>... node) {
+    private static <Val> void setColorRed(RedBlackTreeNode<Val>... node) {
         if (null != node) {
             Stream.of(node)
                     .filter(Objects::nonNull)
@@ -262,12 +341,12 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      * @param node 被操作节点
      * @apiNote 顺时针旋转
      */
-    private void rotateRight(RedBlackTreeNode<Node> node) {
+    private void rotateRight(RedBlackTreeNode<Val> node) {
         if (null != node) {
             // 取出当前节点（node）的左子节点
-            RedBlackTreeNode<Node> left = node.getLeft();
+            RedBlackTreeNode<Val> left = node.getLeft();
             // 将左子节点的右子节点置为当前节点（node）的左节点
-            RedBlackTreeNode<Node> leftRight = left.getRight();
+            RedBlackTreeNode<Val> leftRight = left.getRight();
             node.setLeft(leftRight);
             // 如果左子节点的右子节点不为空
             if (null != leftRight) {
@@ -297,12 +376,12 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
      *
      * @param node 被操作节点
      */
-    private void rotateLeft(RedBlackTreeNode<Node> node) {
+    private void rotateLeft(RedBlackTreeNode<Val> node) {
         if (null != node) {
             // 取出当前节点的右子节点 right
-            RedBlackTreeNode<Node> right = node.getRight();
+            RedBlackTreeNode<Val> right = node.getRight();
             // 将当前节点（node）的右子节点替换为 rightLeft
-            RedBlackTreeNode<Node> rightLeft = right.getLeft();
+            RedBlackTreeNode<Val> rightLeft = right.getLeft();
             node.setRight(rightLeft);
             if (null != rightLeft) {
                 // 如果 rightLeft 不为空，则将其父节点设置为 node
