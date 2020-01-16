@@ -189,12 +189,13 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
     @SuppressWarnings("unchecked")
     @Override
     public boolean remove(Object o) {
-        if (null == o) {
-            return false;
-        }
         Val val = (Val) o;
         RedBlackTreeNode<Val> node = this.getNode(val);
-        return null != node;
+        if (null == node) {
+            return false;
+        }
+        this.deleteNode(node);
+        return true;
     }
 
     /**
@@ -230,6 +231,54 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
      */
     private void deleteNode(RedBlackTreeNode<Val> node) {
         this.size--;
+        // 如果当前处理节点儿女双全
+        if (null != node.getLeft() && null != node.getRight()) {
+            // 就找它的后继节点
+            node = successor(node);
+        }
+        // 优先取左子节点，否则取右子节点
+        RedBlackTreeNode<Val> replacement = null == node.getLeft() ? node.getLeft() : node.getRight();
+        if (null != replacement) {
+            replacement.setParent(node.getParent());
+            if (node.isRoot()) {
+                this.root = replacement;
+            } else if (node.isLeft()) {
+                node.getParent().setLeft(replacement);
+            } else {
+                node.getParent().setRight(replacement);
+            }
+            node.setLeft(null).setRight(null).setParent(null);
+            if (BLACK == colorOf(node)) {
+                this.fixAfterDelete(replacement);
+            }
+        } else if (node == this.root) {
+            // 当前节点或后继节点没有子节点，且 node 是根节点，删除它就是把 root 置空
+            this.root = null;
+        } else {
+            // 当前节点或后继节点没有子节点，且不是根节点
+            if (BLACK == colorOf(node)) {
+                // 如果节点颜色是黑色，先修正
+                this.fixAfterDelete(node);
+            }
+            // 如果处理后父节点存在，则解除当前节点与父节点的关联
+            if (null != node.getParent()) {
+                if (node.isLeft()) {
+                    node.getParent().setLeft(null);
+                } else {
+                    node.getParent().setRight(null);
+                }
+                node.setParent(null);
+            }
+        }
+    }
+
+    /**
+     * 删除后自平衡
+     *
+     * @param node 当前处理节点
+     */
+    private void fixAfterDelete(RedBlackTreeNode<Val> node) {
+
     }
 
     /**
