@@ -54,6 +54,12 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
     }
 
     @Override
+    public void clear() {
+        this.root = null;
+        this.size = 0;
+    }
+
+    @Override
     public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
@@ -278,7 +284,10 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
      * @param node 当前处理节点
      */
     private void fixAfterDelete(RedBlackTreeNode<Val> node) {
+        while (this.root != node && BLACK == colorOf(node)) {
 
+        }
+        setColorBlack(node);
     }
 
     /**
