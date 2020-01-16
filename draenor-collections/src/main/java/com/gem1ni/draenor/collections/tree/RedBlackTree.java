@@ -59,6 +59,16 @@ public class RedBlackTree<Node> extends AbstractSet<Node> {
     }
 
     @Override
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Node> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean add(Node node) {
         if (null == node) {
             throw new NullPointerException("要新增的节点不能为空");
