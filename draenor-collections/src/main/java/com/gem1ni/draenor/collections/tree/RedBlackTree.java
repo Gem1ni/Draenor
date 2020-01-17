@@ -47,7 +47,7 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
 
     @Override
     public Iterator<Val> iterator() {
-        return null;
+        return new TreeItr();
     }
 
     @Override
@@ -504,6 +504,55 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
             // 当前节点（node）成为原右子节点的左子节点
             right.setLeft(node);
             node.setParent(right);
+        }
+    }
+
+    /**
+     * 获取集合中第一个节点
+     *
+     * @return 节点
+     */
+    private RedBlackTreeNode<Val> getFirstNode() {
+        RedBlackTreeNode<Val> node = this.root;
+        for (; null != node && null != node.getLeft(); ) {
+            node = node.getLeft();
+        }
+        return node;
+    }
+
+    /**
+     * 迭代器
+     */
+    private class TreeItr implements Iterator<Val> {
+
+        /**
+         * 当前遍历的节点
+         */
+        private RedBlackTreeNode<Val> current;
+
+        /**
+         * 下一个节点
+         */
+        private RedBlackTreeNode<Val> next;
+
+        /**
+         * 构造方法
+         */
+        public TreeItr() {
+            this.current = RedBlackTree.this.getFirstNode();
+            this.next = successor(this.current);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return null != this.next;
+        }
+
+        @Override
+        public Val next() {
+            this.current = this.next;
+            this.next = successor(this.next);
+            return this.current.getValue();
         }
     }
 }
