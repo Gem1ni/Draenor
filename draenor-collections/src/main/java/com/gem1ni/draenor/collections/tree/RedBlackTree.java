@@ -531,27 +531,36 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
         private RedBlackTreeNode<Val> current;
 
         /**
-         * 下一个节点
+         * 容量
          */
-        private RedBlackTreeNode<Val> next;
+        private int size;
+
+        /**
+         * 游标
+         */
+        private int cursor;
 
         /**
          * 构造方法
          */
         public TreeItr() {
-            this.current = RedBlackTree.this.getFirstNode();
-            this.next = successor(this.current);
+            this.size = RedBlackTree.this.size();
+            this.cursor = 0;
         }
 
         @Override
         public boolean hasNext() {
-            return null != this.next;
+            return 0 < size;
         }
 
         @Override
         public Val next() {
-            this.current = this.next;
-            this.next = successor(this.next);
+            if (0 == this.cursor) {
+                this.current = RedBlackTree.this.getFirstNode();
+            } else {
+                this.current = successor(this.current);
+            }
+            this.size++;
             return this.current.getValue();
         }
     }
