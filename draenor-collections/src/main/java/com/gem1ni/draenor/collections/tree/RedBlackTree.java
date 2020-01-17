@@ -560,7 +560,7 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
             } else {
                 this.current = successor(this.current);
             }
-            this.size++;
+            this.size--;
             return this.current.getValue();
         }
     }
