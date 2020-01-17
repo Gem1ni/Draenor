@@ -559,6 +559,7 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
                 this.current = RedBlackTree.this.getFirstNode();
             } else {
                 this.current = successor(this.current);
+                this.cursor++;
             }
             this.size--;
             return this.current.getValue();
