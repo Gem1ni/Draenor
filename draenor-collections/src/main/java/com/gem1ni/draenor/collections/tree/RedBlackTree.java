@@ -1,7 +1,9 @@
 package com.gem1ni.draenor.collections.tree;
 
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 
 import static com.gem1ni.draenor.collections.tree.RedBlackTreeNode.BLACK;
 import static com.gem1ni.draenor.collections.tree.RedBlackTreeNode.RED;
@@ -130,7 +132,7 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
      */
     private void fixAfterAdd(RedBlackTreeNode<Val> node) {
         // 新增的节点默认为红色
-        setColorRed(node);
+        setColor(BLACK, node);
         // 当前处理的节点不为空，且当前处理的节点不是根节点，且当前处理节点的父节点是红色
         while (null != node && !node.isRoot() && RED == colorOf(parentOf(node))) {
             // 如果当前处理节点的父节点是祖父节点的左子节点
@@ -140,9 +142,10 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
                 if (colorOf(tmp) == RED) {
                     // 1.伯伯节点为红色【只需要变颜色】
                     // 当前节点的父节点和伯伯节点变为黑色
-                    setColorBlack(parentOf(node), tmp);
+                    setColor(BLACK, parentOf(node));
+                    setColor(BLACK, tmp);
                     // 祖父节点变为红色
-                    setColorRed(parentOf(parentOf(node)));
+                    setColor(BLACK, parentOf(parentOf(node)));
                     // 将当前处理节点变为祖父节点继续处理
                     node = parentOf(parentOf(node));
                 } else {
@@ -155,9 +158,9 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
                         this.rotateLeft(node);
                     }
                     // 将当前处理节点的父节点变为黑色
-                    setColorBlack(parentOf(node));
+                    setColor(BLACK, parentOf(node));
                     // 将当前处理节点的祖父节点变为红色
-                    setColorRed(parentOf(parentOf(node)));
+                    setColor(BLACK, parentOf(parentOf(node)));
                 }
                 // 当前处理节点的父节点是祖父节点的右子节点
             } else {
@@ -166,9 +169,10 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
                 // 3.叔叔节点为红色【只需要变颜色】
                 if (RED == colorOf(tmp)) {
                     // 当前节点的父节点和伯伯节点变为黑色
-                    setColorBlack(parentOf(node), tmp);
+                    setColor(BLACK, parentOf(node));
+                    setColor(BLACK, tmp);
                     // 祖父节点变为红色
-                    setColorRed(parentOf(parentOf(node)));
+                    setColor(BLACK, parentOf(parentOf(node)));
                     // 将当前处理节点变为祖父节点继续处理
                     node = parentOf(parentOf(node));
                 } else {
@@ -180,16 +184,16 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
                         this.rotateRight(node);
                     }
                     // 将当前处理节点的父节点变为黑色
-                    setColorBlack(parentOf(node));
+                    setColor(BLACK, parentOf(node));
                     // 将当前处理节点的祖父节点变为红色
-                    setColorRed(parentOf(parentOf(node)));
+                    setColor(BLACK, parentOf(parentOf(node)));
                     // 左旋
                     this.rotateLeft(parentOf(parentOf(node)));
                 }
             }
         }
         // 根节点恒为黑色
-        setColorBlack(this.root);
+        setColor(BLACK, this.root);
     }
 
     @SuppressWarnings("unchecked")
@@ -285,9 +289,65 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
      */
     private void fixAfterDelete(RedBlackTreeNode<Val> node) {
         while (this.root != node && BLACK == colorOf(node)) {
-
+            if (node == leftOf(parentOf(node))) {
+                // 1. 如果当前处理节点是父节点的左子节点，找哥哥节点
+                RedBlackTreeNode<Val> elderBro = rightOf(parentOf(node));
+                if (RED == colorOf(elderBro)) {
+                    setColor(BLACK, elderBro);
+                    setColor(BLACK, parentOf(node));
+                    this.rotateLeft(parentOf(node));
+                    // 将自旋后的新哥哥节点赋值给变量 elderBro
+                    elderBro = rightOf(parentOf(node));
+                }
+                if (BLACK == colorOf(leftOf(elderBro)) && BLACK == colorOf(rightOf(elderBro))) {
+                    // 如果哥哥节点的两个子节点都是黑色，将哥哥节点变为红色
+                    setColor(BLACK, elderBro);
+                    // 处理当前节点的父节点
+                    node = parentOf(node);
+                } else {
+                    if (BLACK == colorOf(rightOf(elderBro))) {
+                        // 如果只有哥哥节点的右节点为黑色
+                        setColor(BLACK, rightOf(elderBro));
+                        setColor(BLACK, elderBro);
+                        this.rotateRight(elderBro);
+                        // 继续处理哥哥的哥哥
+                        elderBro = rightOf(parentOf(node));
+                    }
+                    setColor(colorOf(parentOf(node)), elderBro);
+                    setColor(BLACK, parentOf(node));
+                    setColor(BLACK, rightOf(elderBro));
+                    this.rotateLeft(parentOf(node));
+                    node = this.root;
+                }
+            } else {
+                // 2. 如果当前处理节点是父节点的右子节点，找弟弟节点
+                RedBlackTreeNode<Val> youngerBro = leftOf(parentOf(node));
+                if (RED == colorOf(youngerBro)) {
+                    setColor(BLACK, youngerBro);
+                    setColor(BLACK, parentOf(node));
+                    this.rotateRight(parentOf(node));
+                    // 将右旋后的新弟弟节点赋值给变量 youngerBro
+                    node = leftOf(parentOf(node));
+                }
+                if (BLACK == colorOf(rightOf(youngerBro)) && BLACK == colorOf(leftOf(youngerBro))) {
+                    setColor(BLACK, youngerBro);
+                    node = parentOf(node);
+                } else {
+                    if (BLACK == colorOf(leftOf(youngerBro))) {
+                        setColor(BLACK, rightOf(youngerBro));
+                        setColor(BLACK, youngerBro);
+                        this.rotateLeft(youngerBro);
+                        youngerBro = leftOf(parentOf(node));
+                    }
+                    setColor(colorOf(parentOf(node)), youngerBro);
+                    setColor(BLACK, parentOf(node));
+                    setColor(BLACK, leftOf(youngerBro));
+                    this.rotateRight(parentOf(node));
+                    node = this.root;
+                }
+            }
         }
-        setColorBlack(node);
+        setColor(BLACK, node);
     }
 
     /**
@@ -365,31 +425,15 @@ public class RedBlackTree<Val> extends AbstractSet<Val> {
     }
 
     /**
-     * 【变色】将节点置为黑色
+     * 设置节点颜色
      *
-     * @param node 树节点
-     */
-    @SafeVarargs
-    private static <Val> void setColorBlack(RedBlackTreeNode<Val>... node) {
-        if (null != node) {
-            Stream.of(node)
-                    .filter(Objects::nonNull)
-                    .forEach(n -> n.setColor(BLACK));
-        }
-    }
-
-    /**
-     * 【变色】将节点置为红色
-     *
-     * @param node  树节点
+     * @param color 颜色
+     * @param node  节点
      * @param <Val> 节点值泛型
      */
-    @SafeVarargs
-    private static <Val> void setColorRed(RedBlackTreeNode<Val>... node) {
+    private static <Val> void setColor(boolean color, RedBlackTreeNode<Val> node) {
         if (null != node) {
-            Stream.of(node)
-                    .filter(Objects::nonNull)
-                    .forEach(n -> n.setColor(RED));
+            node.setColor(color);
         }
     }
 
