@@ -6,6 +6,7 @@
 
     <groupId>com.gem1ni</groupId>
     <artifactId>draenor</artifactId>
+    <packaging>pom</packaging>
     <version>1.0.0</version>
     <description>Java based lib</description>
 
