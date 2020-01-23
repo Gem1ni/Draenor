@@ -85,9 +85,10 @@ class RedBlackTreeNode<Val> {
      * @return 是否是父节点的左子节点
      */
     public boolean isLeft() {
+        RedBlackTreeNode<Val> leftOfParent = this.getParent().getLeft();
         return !this.isRoot()
-                && null != this.getParent().getLeft()
-                && this.getParent().getLeft().equals(this);
+                && null != leftOfParent
+                && leftOfParent.equals(this);
     }
 
     /**
