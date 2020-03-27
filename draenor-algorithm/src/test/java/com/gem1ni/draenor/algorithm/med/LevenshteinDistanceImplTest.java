@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LevenshteinDistanceImplTest {
 
-    private final String from = "horse";
+    private final String from = "kitten";
 
-    private final String to = "ros";
+    private final String to = "sitting";
 
     @Test
     void distanceBetween() {
