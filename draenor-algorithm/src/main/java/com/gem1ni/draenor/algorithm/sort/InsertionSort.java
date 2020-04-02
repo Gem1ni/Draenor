@@ -21,10 +21,20 @@ public class InsertionSort<T extends Comparable<T>> implements Sort<T> {
     }
 
     @Override
-    public T[] sort(T[] array) {
-        int length = array.length;
+    public void sort(T[] array) {
+        this.sort(array, 0, array.length);
+    }
+
+    /**
+     * 排序
+     *
+     * @param array 数组
+     * @param from  起始下标
+     * @param to    结束下标
+     */
+    public void sort(T[] array, int from, int to) {
         // 从第二个元素开始
-        for (int i = 1; i < length; i++) {
+        for (int i = from + 1; i < to; i++) {
             // 从第 i 个元素开始，依次和前面 i - 1 个元素比较，如果小于，就交换位置
             for (int j = i; j > 0; j--) {
                 if (0 > array[j].compareTo(array[j - 1])) {
@@ -35,6 +45,5 @@ public class InsertionSort<T extends Comparable<T>> implements Sort<T> {
                 }
             }
         }
-        return array;
     }
 }

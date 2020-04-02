@@ -105,7 +105,7 @@ public class ShellSort<T extends Comparable<T>> implements Sort<T> {
     }
 
     @Override
-    public T[] sort(T[] array) {
+    public void sort(T[] array) {
         int length = array.length;
         int step = this.sequence.initStep(length);
         while (1 <= step) {
@@ -122,6 +122,5 @@ public class ShellSort<T extends Comparable<T>> implements Sort<T> {
             }
             step = this.sequence.nextStep(step);
         }
-        return array;
     }
 }

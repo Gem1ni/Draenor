@@ -13,9 +13,8 @@ public interface Sort<T extends Comparable<T>> {
      * 排序
      *
      * @param array 待排序数组
-     * @return 排序后数组
      */
-    T[] sort(T[] array);
+    void sort(T[] array);
 
     /**
      * 交换数组中两个元素的位置

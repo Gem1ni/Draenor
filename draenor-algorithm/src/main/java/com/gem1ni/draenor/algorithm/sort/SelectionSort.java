@@ -34,7 +34,7 @@ public class SelectionSort<T extends Comparable<T>> implements Sort<T> {
     }
 
     @Override
-    public T[] sort(T[] array) {
+    public void sort(T[] array) {
         int length = array.length;
         for (int i = 0; i < length; i++) {
             int current = i;
@@ -47,6 +47,5 @@ public class SelectionSort<T extends Comparable<T>> implements Sort<T> {
             }
             this.swap(array, current, i);
         }
-        return array;
     }
 }
